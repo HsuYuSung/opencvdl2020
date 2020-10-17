@@ -18,6 +18,7 @@ class window(QDockWidget ,Ui_Opencvdl_HW1):
     def on_binding_ui(self):
         self.pushButton.clicked.connect(self.load_image)
         self.pushButton_2.clicked.connect(self.Color_Separation)
+        self.pushButton_3.clicked.connect(self.Image_Flipping)
 
     def load_image(self):
         img = plt.imread('Uncle_Roger.jpg')
@@ -45,6 +46,17 @@ class window(QDockWidget ,Ui_Opencvdl_HW1):
         plt.figure("b")
         plt.imshow(b)
         plt.show()
+    
+    def Image_Flipping(self):
+        img = plt.imread('Uncle_Roger.jpg')
+        plt.figure("origin")
+        plt.imshow(img)
+        img_reverse = img[:,::-1,:]
+        plt.figure("reverse")
+        plt.imshow(img_reverse)
+        plt.show()
+
+
         
 
 if __name__ == '__main__':
