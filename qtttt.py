@@ -1,4 +1,4 @@
-from cv2 import cv2 as cv
+
 import sys
 import matplotlib.pyplot as plt
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton
