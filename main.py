@@ -1,6 +1,9 @@
 
 import sys
 from cv2 import cv2 as cv
+import matplotlib.image as mpimg
+from scipy import signal
+from scipy import misc
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.widgets import Slider, Button, RadioButtons
@@ -26,6 +29,7 @@ class window(QDockWidget ,Ui_Opencvdl_HW1):
         self.pushButton_5.clicked.connect(self.Median_filter)
         self.pushButton_6.clicked.connect(self.Gaussian_filter)
         self.pushButton_7.clicked.connect(self.Bilateral_filter)
+        self.pushButton_8.clicked.connect(self.Gaussian_blur)
 
     def load_image(self):
         img = plt.imread('Uncle_Roger.jpg')
@@ -108,6 +112,21 @@ class window(QDockWidget ,Ui_Opencvdl_HW1):
         plt.figure('Bilateral')
         plt.imshow(plt_blur)
         plt.show()
+    
+    def Gaussian_blur(self):
+        #3*3 Gassian filter
+        x, y = np.mgrid[-1:2, -1:2]
+
+        gaussian_kernel = np.exp(-(x**2+y**2))
+        #Normalization
+        gaussian_kernel = gaussian_kernel / gaussian_kernel.sum()
+        img = mpimg.imread('Chihiro.jpg')
+        gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+        grad = signal.convolve2d(gray, gaussian_kernel, boundary='symm', mode='same') #卷積
+        plt.figure('Gaussian Blur')
+        plt.imshow(grad, cmap=plt.get_cmap('gray'))
+        plt.show()
+
 
 
 
