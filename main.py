@@ -13,18 +13,12 @@ from main_ui import Ui_Opencvdl_HW1
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow, QDockWidget, QLineEdit
 
-
-
-
-
 class window(QDockWidget ,Ui_Opencvdl_HW1):
     def __init__(self, parent=None):
         super(window, self).__init__(parent)
         self.setupUi(self)
         self.on_binding_ui()
-        # self.linechange()
         
-    
     def on_binding_ui(self):
         self.pushButton.clicked.connect(self.load_image)
         self.pushButton_2.clicked.connect(self.Color_Separation)
@@ -38,13 +32,6 @@ class window(QDockWidget ,Ui_Opencvdl_HW1):
         self.pushButton_10.clicked.connect(self.sobel_y)
         self.pushButton_11.clicked.connect(self.magnitude)
         self.pushButton_12.clicked.connect(self.text)
-
-    # def linechange(self):
-    #     self.Tx.textChanged.connect(self.text)
-    #     self.Tx_2.textChanged.connect(self.text)
-    #     self.Tx_3.textChanged.connect(self.text)
-    #     self.Tx_4.textChanged.connect(self.text)
-        
 
     def text(self):
         rot_n = 0
@@ -83,8 +70,6 @@ class window(QDockWidget ,Ui_Opencvdl_HW1):
         plt.imshow(dst_plt)
         plt.show()
         
-
-
     def load_image(self):
         img = plt.imread('Uncle_Roger.jpg')
         plt.imshow(img)
@@ -132,6 +117,19 @@ class window(QDockWidget ,Ui_Opencvdl_HW1):
         fig = plt.subplot()
         plt.imshow(img_reverse, alpha = 0.5)
         plt.imshow(img, alpha = 0.5)
+
+        def image(val):
+            plt.cla()
+            plt.imshow(img_reverse, alpha = 1 - val)
+            plt.imshow(img, alpha = val)
+            plt.show()
+            
+        def update(val):
+            value = sbar.val
+            image(value)
+
+        sbar.on_changed(update)
+        plt.show()
 
     def Median_filter(self):
         img = cv.imread('Cat.png')
@@ -207,22 +205,9 @@ class window(QDockWidget ,Ui_Opencvdl_HW1):
         y_mask = np.zeros(img.shape)
         filters.sobel(img, 1, x_mask)
         filters.sobel(img, 1, y_mask)
-
         result = np.hypot(x_mask, y_mask)
         plt.imshow(result, cmap='gray', vmin=0, vmax=255)
         plt.show()
-
-    # def transfroms(self):
-    #     mytext = self.textEdit.toPlainText()
-    #     print(mytext)
-
-
-
-
-
-
-
-
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
