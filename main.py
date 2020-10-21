@@ -2,14 +2,17 @@
 import sys
 from cv2 import cv2 as cv
 import matplotlib.image as mpimg
-from scipy import signal
-from scipy import misc
+from scipy import ndimage, misc, signal
+from PIL import Image
+from scipy.ndimage import filters
+
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.widgets import Slider, Button, RadioButtons
+from matplotlib.widgets import Slider
 from main_ui import Ui_Opencvdl_HW1
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtWidgets import QApplication, QMainWindow, QDockWidget
+from PyQt5.QtWidgets import QApplication, QMainWindow, QDockWidget, QLineEdit
+
 
 
 
@@ -19,6 +22,7 @@ class window(QDockWidget ,Ui_Opencvdl_HW1):
         super(window, self).__init__(parent)
         self.setupUi(self)
         self.on_binding_ui()
+        # self.linechange()
         
     
     def on_binding_ui(self):
@@ -30,6 +34,56 @@ class window(QDockWidget ,Ui_Opencvdl_HW1):
         self.pushButton_6.clicked.connect(self.Gaussian_filter)
         self.pushButton_7.clicked.connect(self.Bilateral_filter)
         self.pushButton_8.clicked.connect(self.Gaussian_blur)
+        self.pushButton_9.clicked.connect(self.sobel_x)
+        self.pushButton_10.clicked.connect(self.sobel_y)
+        self.pushButton_11.clicked.connect(self.magnitude)
+        self.pushButton_12.clicked.connect(self.text)
+
+    # def linechange(self):
+    #     self.Tx.textChanged.connect(self.text)
+    #     self.Tx_2.textChanged.connect(self.text)
+    #     self.Tx_3.textChanged.connect(self.text)
+    #     self.Tx_4.textChanged.connect(self.text)
+        
+
+    def text(self):
+        rot_n = 0
+        scale_n = 1
+        x_n = 0
+        y_n = 0
+        x_old = 160
+        y_old = 84
+
+        rot = self.Tx.text()
+        scale = self.Tx_2.text()
+        transform_x = self.Tx_3.text()
+        transform_y = self.Tx_4.text()
+        if rot:
+            rot_n = int(rot)
+        if scale:
+            scale_n = int(scale)
+        if transform_x:
+            x_n = int(transform_x)
+        if transform_y:
+            y_n = int(transform_y)
+
+        img = cv.imread('Parrot.png')
+
+        rows, cols, _ = img.shape
+
+        #translate positon
+        M = np.float32([[1,0,x_n],[0,1,y_n]])
+        tra_dst = cv.warpAffine(img,M,(cols,rows))
+
+        #rotate and scale
+        M = cv.getRotationMatrix2D((x_old + x_n, y_old + y_n),rot_n, scale_n)
+        dst = cv.warpAffine(tra_dst,M,(cols, rows))
+
+        dst_plt = dst[:,:,::-1]
+        plt.imshow(dst_plt)
+        plt.show()
+        
+
 
     def load_image(self):
         img = plt.imread('Uncle_Roger.jpg')
@@ -82,7 +136,7 @@ class window(QDockWidget ,Ui_Opencvdl_HW1):
     def Median_filter(self):
         img = cv.imread('Cat.png')
         median = cv.medianBlur(img, 7)
-        plt_img = img [:,:,::-1]
+        plt_img = img[:,:,::-1]
         plt.figure('origin')
         plt.imshow(plt_img)
         plt_median = median[:,:,::-1]
@@ -120,12 +174,52 @@ class window(QDockWidget ,Ui_Opencvdl_HW1):
         gaussian_kernel = np.exp(-(x**2+y**2))
         #Normalization
         gaussian_kernel = gaussian_kernel / gaussian_kernel.sum()
-        img = mpimg.imread('Chihiro.jpg')
+        img = plt.imread('Chihiro.jpg')
         gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
         grad = signal.convolve2d(gray, gaussian_kernel, boundary='symm', mode='same') #卷積
         plt.figure('Gaussian Blur')
-        plt.imshow(grad, cmap=plt.get_cmap('gray'))
+        plt.imshow(gray, cmap=plt.get_cmap('gray'))
         plt.show()
+
+    def sobel_x(self):
+        pil_img = Image.open('Chihiro.jpg').convert('L')
+        img = np.array(pil_img)
+
+        result = np.zeros(img.shape)
+        filters.sobel(img, 1, result)
+        plt.imshow(result, cmap='gray', vmin=0, vmax=255)
+        plt.show()
+
+    def sobel_y(self):
+        pil_img = Image.open('Chihiro.jpg').convert('L')
+        img = np.array(pil_img)
+
+        result = np.zeros(img.shape)
+        filters.sobel(img, 0, result)
+        plt.imshow(result, cmap='gray', vmin=0, vmax=255)
+        plt.show()
+    
+    def magnitude(self):
+        pil_img = Image.open('Chihiro.jpg').convert('L')
+        img = np.array(pil_img)
+        
+        x_mask = np.zeros(img.shape)
+        y_mask = np.zeros(img.shape)
+        filters.sobel(img, 1, x_mask)
+        filters.sobel(img, 1, y_mask)
+
+        result = np.hypot(x_mask, y_mask)
+        plt.imshow(result, cmap='gray', vmin=0, vmax=255)
+        plt.show()
+
+    # def transfroms(self):
+    #     mytext = self.textEdit.toPlainText()
+    #     print(mytext)
+
+
+
+
+
 
 
 
