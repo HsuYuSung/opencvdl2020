@@ -46,13 +46,13 @@ class window(QDockWidget ,Ui_Opencvdl_HW1):
         transform_x = self.Tx_3.text()
         transform_y = self.Tx_4.text()
         if rot:
-            rot_n = int(rot)
+            rot_n = float(rot)
         if scale:
-            scale_n = int(scale)
+            scale_n = float(scale)
         if transform_x:
-            x_n = int(transform_x)
+            x_n = float(transform_x)
         if transform_y:
-            y_n = int(transform_y)
+            y_n = float(transform_y)
 
         img = cv.imread('Parrot.png')
 
