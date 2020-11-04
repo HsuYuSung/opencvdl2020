@@ -72,6 +72,8 @@ class window(QDockWidget ,Ui_Opencvdl_HW1):
         
     def load_image(self):
         img = plt.imread('Uncle_Roger.jpg')
+        print('Height = ', img.shape[0])
+        print('Width = ', img.shape[1])
         plt.imshow(img)
         plt.show()
 
