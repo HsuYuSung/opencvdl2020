@@ -91,6 +91,11 @@ class window(QDockWidget, Ui_DockWidget):
         objpoints = []  # 3d point in real world space
         imgpoints = []  # 2d points in image plane.
 
+        mtx_arr = list()
+        dist_arr = list()
+        rvecs_arr = list()
+        tvecs_arr = list()
+        
         for i in range(1, 16):
             img_name = str(i) + '.bmp'
             fname = os.path.join('Datasets/Q2_Image', img_name)
@@ -106,27 +111,31 @@ class window(QDockWidget, Ui_DockWidget):
                 imgpoints.append(corners)
                 # Draw and display the corners
                 cv.drawChessboardCorners(img, (11, 8), corners2, ret)
-
-                ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(
-                    objpoints, imgpoints, gray.shape[::-1], None, None)
-
                 plt_img = img[:, :, ::-1]
                 plt.figure(fname)
                 plt.imshow(plt_img)
-                np.savez('output.npz', mtx, dist, rvecs, tvecs)
 
+        ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(
+            objpoints, imgpoints, gray.shape[::-1], None, None)
+
+        np.savez('output.npz', mtx, dist, rvecs, tvecs)
         plt.show()
 
     def find_intrinsic(self):
-        pass
+        with np.load('output.npz') as X:
+            mtx, _, _, _ = [X[i] for i in ('arr_0', 'arr_1', 'arr_2', 'arr_3')]
+
+        print(mtx)
 
     def find_extrinsic(self):
         num = self.spinBox.value()
         print(num)
-        pass
 
     def find_distortion(self):
-        pass
+        with np.load('output.npz') as X:
+            _, dist, _, _ = [X[i] for i in ('arr_0', 'arr_1', 'arr_2', 'arr_3')]
+
+        print(dist)
 
     def draw(self, img, corners, imgpts):
         imgpts = np.int32(imgpts).reshape(-1, 2)
@@ -140,7 +149,7 @@ class window(QDockWidget, Ui_DockWidget):
         return img
 
     def augmentation3d(self):
-
+        plt.close('all')
         with np.load('output.npz') as X:
             mtx, dist, _, _ = [X[i] for i in ('arr_0', 'arr_1', 'arr_2', 'arr_3')]
 
@@ -182,7 +191,6 @@ class window(QDockWidget, Ui_DockWidget):
                 im = plt.imshow(plt_img, animated=True)
 
                 ims.append([im])
-        print(len(ims))
 
         _ = animation.ArtistAnimation(fig, ims, interval=500,
                                         blit=True, repeat_delay=500)
