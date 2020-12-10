@@ -42,7 +42,7 @@ class window(QDockWidget, Ui_DockWidget):
         imgray = cv.cvtColor(im, cv.COLOR_BGR2GRAY)
         gray_blur = cv.GaussianBlur(imgray, (15, 15), 0)
         ret, thresh = cv.threshold(gray_blur, 127, 255, 0)
-        im2, contours1, hierarchy = cv.findContours(thresh, cv.RETR_TREE,
+        contours1, _ = cv.findContours(thresh, cv.RETR_TREE,
             cv.CHAIN_APPROX_SIMPLE)
 
         contours1.pop(0)
@@ -64,7 +64,7 @@ class window(QDockWidget, Ui_DockWidget):
         imgray = cv.cvtColor(im, cv.COLOR_BGR2GRAY)
         gray_blur = cv.GaussianBlur(imgray, (15, 15), 0)
         ret, thresh = cv.threshold(gray_blur, 127, 255, 0)
-        im2, contours2, hierarchy = cv.findContours(thresh, cv.RETR_TREE,
+        contours2, _ = cv.findContours(thresh, cv.RETR_TREE,
             cv.CHAIN_APPROX_SIMPLE)
 
         contours2.pop(0)
@@ -90,11 +90,6 @@ class window(QDockWidget, Ui_DockWidget):
         # Arrays to store object points and image points from all the images.
         objpoints = []  # 3d point in real world space
         imgpoints = []  # 2d points in image plane.
-
-        mtx_arr = list()
-        dist_arr = list()
-        rvecs_arr = list()
-        tvecs_arr = list()
         
         for i in range(1, 16):
             img_name = str(i) + '.bmp'
@@ -161,7 +156,6 @@ class window(QDockWidget, Ui_DockWidget):
         axis = np.float32([[1, 1, 0], [5, 1, 0],
                            [3, 5, 0], [3, 3, -3]])
 
-
         filepath = list()
         for i in range(5):
             path = os.path.join('Datasets/Q3_Image', str(i+1) + '.bmp')
@@ -197,7 +191,37 @@ class window(QDockWidget, Ui_DockWidget):
         plt.show()
 
     def stereo_disparity(self):
-        pass
+        imgL = cv.imread('Datasets/Q4_Image/imgL.png', 0)
+        imgR = cv.imread('Datasets/Q4_Image/imgR.png', 0)
+
+        stereo = cv.StereoBM_create(numDisparities=256, blockSize=31)
+        Depth = stereo.compute(imgL, imgR)
+        focal = 178
+        B = 2826
+        fig, ax = plt.subplots()
+        disparity = (focal * B) // Depth
+        plt.imshow(Depth, 'gray')
+
+        def onclick(event):
+
+            _, ax2 = plt.subplots()
+            x = event.x
+            y = event.y
+            D = Depth[x, y]
+            dis = disparity[x, y]
+
+            textstr = '\n'.join((r'$Disparity: %.2f pixels$' %(dis,),
+                                 r'$Depth: %.2f mm$' %(D, )))
+            props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+            ax2.text(0.95, 0.05, textstr, transform=ax2.transAxes, fontsize=14,
+                     horizontalalignment='right', verticalalignment='bottom', bbox=props)
+
+            plt.imshow(Depth, 'gray')
+            plt.show()
+
+        cid = fig.canvas.mpl_connect('button_press_event', onclick)
+        plt.show()
+            
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
