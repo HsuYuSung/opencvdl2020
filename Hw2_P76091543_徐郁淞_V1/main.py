@@ -7,7 +7,7 @@ from tempfile import TemporaryFile
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.widgets import Slider
+
 from main_ui import Ui_DockWidget
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow, QDockWidget, QLineEdit, QLabel
@@ -91,6 +91,7 @@ class window(QDockWidget, Ui_DockWidget):
         objpoints = []  # 3d point in real world space
         imgpoints = []  # 2d points in image plane.
         
+
         for i in range(1, 16):
             img_name = str(i) + '.bmp'
             fname = os.path.join('Datasets/Q2_Image', img_name)
@@ -114,6 +115,8 @@ class window(QDockWidget, Ui_DockWidget):
             objpoints, imgpoints, gray.shape[::-1], None, None)
 
         np.savez('output.npz', mtx, dist, rvecs, tvecs)
+        np.savez('img_obj_points.npz', imgpoints, objpoints)
+
         plt.show()
 
     def find_intrinsic(self):
@@ -123,8 +126,20 @@ class window(QDockWidget, Ui_DockWidget):
         print(mtx)
 
     def find_extrinsic(self):
+        with np.load('img_obj_points.npz') as X:
+            imgpoints, objpoints = [X[i] for i in ('arr_0', 'arr_1')]
+        with np.load('output.npz') as X:
+            mtx, dist, _, _ = [X[i]
+                             for i in ('arr_0', 'arr_1', 'arr_2', 'arr_3')]
+
         num = self.spinBox.value()
-        print(num)
+
+        retval, rvecs, tvecs = cv.solvePnP(objpoints[num], imgpoints[num], mtx, dist)
+        dst, _ = cv.Rodrigues(rvecs)
+        extrinsic_mtx = cv.hconcat([dst, tvecs])
+        print(extrinsic_mtx)
+
+
 
     def find_distortion(self):
         with np.load('output.npz') as X:
