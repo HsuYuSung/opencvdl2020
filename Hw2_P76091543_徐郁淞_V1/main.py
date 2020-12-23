@@ -46,7 +46,7 @@ class window(QDockWidget, Ui_DockWidget):
             cv.CHAIN_APPROX_SIMPLE)
 
         contours1.pop(0)
-        cv.drawContours(im, contours1, -1, (0, 255, 0), 2)
+        cv.drawContours(im, contours1, -1, (0, 255, 0), 3)
 
         coin_count1 = len(contours1)
         text = 'There are ' + str(coin_count1) + ' coins in coin01.jpg'
@@ -54,6 +54,7 @@ class window(QDockWidget, Ui_DockWidget):
         label.setText(text)
 
         cv2plt = im[:,:,::-1]
+        plt.figure(1)
         plt.imshow(cv2plt)
         plt.show()
 
@@ -134,7 +135,7 @@ class window(QDockWidget, Ui_DockWidget):
 
         num = self.spinBox.value()
 
-        retval, rvecs, tvecs = cv.solvePnP(objpoints[num], imgpoints[num], mtx, dist)
+        retval, rvecs, tvecs = cv.solvePnP(objpoints[num-1], imgpoints[num-1], mtx, dist)
         dst, _ = cv.Rodrigues(rvecs)
         extrinsic_mtx = cv.hconcat([dst, tvecs])
         print(extrinsic_mtx)
